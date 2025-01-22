@@ -35,7 +35,7 @@ class Predictor(BasePredictor):
             "vocoder_dir": None,
             "acoustics_dir": None,
             "infer_mode": "single",
-            "text_prompt": "",
+            "text": "",
             "audio_prompt": "",
             "top_k": -100,
             "temperature": 1.0,
@@ -103,7 +103,7 @@ class Predictor(BasePredictor):
     ) -> cog.Path:
         """Run a single prediction on the model"""
         if model == "valle_v1_small":
-            self.infer_valle_v1_small.text_prompt = text
+            self.infer_valle_v1_small.text = text
             self.infer_valle_v1_small.audio_prompt = speaker_reference
             self.infer_valle_v1_small.inference()
             return Path(self.infer_valle_v1_small.output_dir + "/output.wav")
