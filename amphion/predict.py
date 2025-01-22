@@ -71,18 +71,18 @@ class Predictor(BasePredictor):
 
         # v2
         run(
-            ["git", "clone", "https://huggingface.co/amphion/valle"],
+            ["git", "clone", "https://huggingface.co/amphion/valle", "valle_v2"],
             cwd="/Amphion/ckpts/tts",
         )
 
         # move SpeechTokenizer.pt and config.json to tokenizer subdirectory
-        Path("/Amphion/ckpts/tts/tokenizer").mkdir(parents=True, exist_ok=True)
+        Path("/Amphion/ckpts/tts/valle_v2/tokenizer").mkdir(parents=True, exist_ok=True)
         shutil.move(
-            "/Amphion/ckpts/tts/config.json", "/Amphion/ckpts/tts/tokenizer"
+            "/Amphion/ckpts/tts/valle_v2/config.json", "/Amphion/ckpts/tts/valle_v2/tokenizer"
         )
         shutil.move(
-            "/Amphion/ckpts/tts/SpeechTokenizer.pt",
-            "/Amphion/ckpts/tts/tokenizer",
+            "/Amphion/ckpts/tts/valle_v2/SpeechTokenizer.pt",
+            "/Amphion/ckpts/tts/valle_v2/tokenizer",
         )
 
     def predict(
