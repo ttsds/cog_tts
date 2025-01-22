@@ -108,4 +108,4 @@ class Predictor(BasePredictor):
             self.infer_valle_v1_small.args.text_prompt = text
             self.infer_valle_v1_small.args.audio_prompt = speaker_reference
             self.infer_valle_v1_small.inference()
-            return Path(self.infer_valle_v1_small.output_dir + "/output.wav")
+            return Path(self.infer_valle_v1_small.args.output_dir + "/output.wav")
