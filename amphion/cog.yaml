@@ -1,0 +1,72 @@
+# Configuration for Cog ⚙️
+# Reference: https://cog.run/yaml
+
+build:
+  # Set to true if your model requires a GPU
+  gpu: false
+
+  system_packages:
+    - git
+    - espeak-ng
+    - gcc
+    - build-essential
+    - g++-12
+    - git-lfs
+
+  python_version: "3.9"
+
+  # Python packages to install in your environment
+  python_packages:
+    - "numpy==1.23.5"
+
+    # Torch ecosystem
+    - "torch==2.0.1"
+    - "torchaudio==2.0.2"
+    - "torchvision==0.15.2"
+    - "transformers==4.41.2"
+    - "accelerate==0.24.1"
+    - "git+https://github.com/MiniXC/fairseq-noconf.git"
+
+    # Additional dependencies
+    - "Cython==0.29.36"
+    - "json5==0.9.11"
+    - "scipy==1.11.1"
+    - "scikit-learn==1.3.0"
+    - "lhotse==1.15.0"
+    - "ruamel.yaml<0.18.0"
+    - "six==1.16.0"
+    - "librosa==0.10.0.post2"
+    - "inflect==7.0.0"
+    - "g2p-en==2.1.0"
+    - "phonemizer==3.2.1"
+    - "omegaconf<2.1"
+    - "hydra-core<1.1"
+    - "openai-whisper==20230314"
+    - "easydict==1.10"
+    - "soundfile==0.12.1"
+    - "einops==0.6.0"
+    - "encodec==0.1.1"
+    - "vocos==0.1.0"
+    - "speechtokenizer==1.0.1"
+    - "descript-audio-codec==1.0.0"
+    - "unidecode==1.3.6"
+    - "torchmetrics==0.11.4"
+    - "tensorboardX==2.6"
+    - "nltk==3.8.1"
+
+  # Commands run after the environment is set up
+  run:
+    # Clone Amphion
+    - "echo 'Cloning Amphion1...'"
+    - "git clone https://github.com/open-mmlab/Amphion.git"
+    - "cd Amphion && git checkout 04dfe6e"
+    - "git lfs install"
+
+    # Patch Amphion files
+    - "sed -i '1s/^/import sys\\nsys.path.append(\".\")\\n/' /Amphion/bins/tts/inference.py"
+    - "sed -i 's/self.args.text.replace(\" \", \"_\", 100)/\"output\"/' /Amphion/models/tts/naturalspeech2/ns2_inference.py"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+
+image: "r8.im/ttsds/amphion"
