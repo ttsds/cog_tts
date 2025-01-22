@@ -104,8 +104,8 @@ class Predictor(BasePredictor):
     ) -> cog.Path:
         """Run a single prediction on the model"""
         if model == "valle_v1_small":
-            self.infer_valle_v1_small.text = text
-            self.infer_valle_v1_small.text_prompt = text
-            self.infer_valle_v1_small.audio_prompt = speaker_reference
+            self.infer_valle_v1_small.args.text = text
+            self.infer_valle_v1_small.args.text_prompt = text
+            self.infer_valle_v1_small.args.audio_prompt = speaker_reference
             self.infer_valle_v1_small.inference()
             return Path(self.infer_valle_v1_small.output_dir + "/output.wav")
