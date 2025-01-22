@@ -67,7 +67,7 @@ class Predictor(BasePredictor):
             new_args[k] = v
         args = argparse.Namespace(**new_args)
         cfg = load_config(args.config)
-        infer_valle_v1_small = VALLEInference(args, cfg)
+        self.infer_valle_v1_small = VALLEInference(args, cfg)
 
         # v2
         run(
@@ -102,6 +102,8 @@ class Predictor(BasePredictor):
         speaker_reference: cog.Path = cog.Input(),
     ) -> cog.Path:
         """Run a single prediction on the model"""
-        # processed_input = preprocess(image)
-        # output = self.model(processed_image, scale)
-        # return postprocess(output)
+        if model == "valle_v1_small":
+            self.infer_valle_v1_small.text_prompt = text
+            self.infer_valle_v1_small.audio_prompt = speaker_reference
+            self.infer_valle_v1_small.inferencer.inference()
+            return Path(self.infer_valle_v1_small.output_dir + "/output.wav")
