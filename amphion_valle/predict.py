@@ -150,9 +150,6 @@ class Predictor(BasePredictor):
             text_prompt = torch.tensor(text_prompt, dtype=torch.long)
             text = torch.tensor(text, dtype=torch.long)
             transcript = torch.cat([text_prompt, text])
-            if GPU:
-                wav = wav.cuda()
-                transcript = transcript.cuda()
             batch = {"speech": wav.unsqueeze(0), "phone_ids": transcript.unsqueeze(0)}
             configs = [dict(
                 top_p=0.9,
@@ -163,5 +160,8 @@ class Predictor(BasePredictor):
                 num_beams=1,
             )]
             output_wav = self.valle_v2(batch, configs)
-            torchaudio.save(output_dir + "/test_pred.wav", output_wav.squeeze(0), 16000)
+            if GPU:
+                torchaudio.save(output_dir + "/test_pred.wav", output_wav.squeeze(0).cpu(), 16000)
+            else:
+                torchaudio.save(output_dir + "/test_pred.wav", output_wav.squeeze(0), 16000)
             return cog.Path(output_dir + "/test_pred.wav")
