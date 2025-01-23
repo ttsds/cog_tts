@@ -3,7 +3,7 @@
 
 build:
   # Set to true if your model requires a GPU
-  gpu: false
+  gpu: true
 
   system_packages:
     - git
@@ -41,7 +41,7 @@ build:
     - "phonemizer==3.2.1"
     - "omegaconf<2.1"
     - "hydra-core<1.1"
-    - "openai-whisper==20230314"
+    - "openai-whisper==20240930"
     - "easydict==1.10"
     - "soundfile==0.12.1"
     - "einops==0.6.0"
@@ -69,4 +69,4 @@ build:
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
 
-image: "r8.im/ttsds/amphion"
+image: "r8.im/ttsds/amphion_valle"
