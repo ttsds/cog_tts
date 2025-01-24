@@ -35,3 +35,23 @@ if [ ! -d "checkpoints/bark_vc_it" ]; then
     git clone https://huggingface.co/gpwr/bark-it-tokenizer checkpoints/bark_vc_it
     rm -rf checkpoints/bark_vc_it/.git
 fi
+if [ ! -d "checkpoints/hubert_base" ]; then
+    mkdir -p checkpoints/hubert_base
+    wget https://dl.fbaipublicfiles.com/hubert/hubert_base_ls960.pt -P checkpoints/hubert_base
+fi
+if [ ! -d "checkpoints/bark_vc_code" ]; then
+    git clone https://github.com/gitmylo/bark-voice-cloning-HuBERT-quantizer.git checkpoints/bark_vc_code
+    rm -rf checkpoints/bark_vc_code/.git
+fi
+if [ ! -d "checkpoints/bark_vc_code/data" ]; then
+    mkdir -p checkpoints/bark_vc_code/data/models/hubert
+    mv checkpoints/hubert_base/hubert_base_ls960.pt checkpoints/bark_vc_code/data/models/hubert/hubert.pt
+    mv checkpoints/bark_vc_en/quantifier_V1_hubert_base_ls960_23.pth checkpoints/bark_vc_code/data/models/hubert/tokenizer_en.pth
+    mv checkpoints/bark_vc_pl/polish-HuBERT-quantizer_8_epoch.pth checkpoints/bark_vc_code/data/models/hubert/tokenizer_pl.pth
+    mv checkpoints/bark_vc_de/german-HuBERT-quantizer_14_epoch.pth checkpoints/bark_vc_code/data/models/hubert/tokenizer_de.pth
+    mv checkpoints/bark_vc_es/es_tokenizer.pth checkpoints/bark_vc_code/data/models/hubert/tokenizer_es.pth
+    mv checkpoints/bark_vc_pt/portuguese-HuBERT-quantizer_24_epoch.pth checkpoints/bark_vc_code/data/models/hubert/tokenizer_pt.pth
+    mv checkpoints/bark_vc_ja/japanese-HuBERT-quantizer_24_epoch.pth checkpoints/bark_vc_code/data/models/hubert/tokenizer_ja.pth
+    mv checkpoints/bark_vc_tr/turkish_model_epoch_14.pth checkpoints/bark_vc_code/data/models/hubert/tokenizer_tr.pth
+    mv checkpoints/bark_vc_it/it_tokenizer.pth checkpoints/bark_vc_code/data/models/hubert/tokenizer_it.pth
+fi
