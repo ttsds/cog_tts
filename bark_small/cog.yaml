@@ -40,4 +40,4 @@ build:
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
 
-image: "r8.im/ttsds/bark"
+image: "r8.im/ttsds/bark_small"

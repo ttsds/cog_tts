@@ -69,9 +69,9 @@ class Predictor(BasePredictor):
         self.encodec.set_target_bandwidth(6.0)
         self.encodec.to(device)
         preload_models(
-            text_use_small=False,
-            coarse_use_small=False,
-            fine_use_small=False,
+            text_use_small=True,
+            coarse_use_small=True,
+            fine_use_small=True,
             device=device,
         )
 
