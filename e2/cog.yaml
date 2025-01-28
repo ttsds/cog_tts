@@ -1,0 +1,30 @@
+# Configuration for Cog ⚙️
+# Reference: https://cog.run/yaml
+
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+
+  # a list of ubuntu apt packages to install
+  system_packages:
+    - git
+    - git-lfs
+    - libsox-dev
+    - ffmpeg
+    - gcc
+    - build-essential
+    - g++-12
+
+  # python version in the form '3.11' or '3.11.4'
+  python_version: "3.10"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "torch==2.3.0"
+    - "torchaudio==2.3.0"
+    - "git+https://github.com/SWivid/F5-TTS.git@700039b55422db5aaa80a1b07fbf671e039ba66b"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+
+image: "r8.im/ttsds/e2"

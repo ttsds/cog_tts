@@ -47,7 +47,6 @@ build:
     # Audio / Speech
     - "librosa==0.10.0"
     - "encodec==0.1.1"
-    - "openai-whisper==20240930"
 
     # Utilities
     - "json5==0.9.11"

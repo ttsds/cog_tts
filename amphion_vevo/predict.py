@@ -1,7 +1,5 @@
 from pathlib import Path
-from subprocess import run
 import shutil
-import argparse
 import os
 import sys
 from hashlib import sha256
@@ -9,12 +7,8 @@ from hashlib import sha256
 import cog
 from cog import BasePredictor
 
-from transformers import pipeline
 import torch
-import torchaudio
 import numpy as np
-import safetensors
-from accelerate import load_checkpoint_and_dispatch
 
 # ----------------
 # Amphion
@@ -64,22 +58,6 @@ class Predictor(BasePredictor):
             device=device,
         )
 
-        # ----------------
-        # whisper
-        # ----------------
-        if GPU:
-            self.whisper = pipeline(
-                "automatic-speech-recognition",
-                model="/src/checkpoints/_whisper-large-v3-turbo",
-                torch_dtype=torch.float16,
-                device="cuda",
-            )
-        else:
-            self.whisper = pipeline(
-                "automatic-speech-recognition",
-                model="/src/checkpoints/_whisper-large-v3-turbo",
-            )
-
     def predict(
         self,
         language: str = cog.Input(
@@ -94,20 +72,19 @@ class Predictor(BasePredictor):
         ),
         text: str = cog.Input(),
         speaker_reference: cog.Path = cog.Input(),
+        text_reference: str = cog.Input(),
     ) -> cog.Path:
         """Run a single prediction on the model"""
         # random output dir
         output_dir = "/results/" + sha256(np.random.bytes(32)).hexdigest()
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-        prompt_text = self.whisper(str(speaker_reference))["text"]
-
         gen_audio = self.vevo.inference_ar_and_fm(
             src_wav_path=None,
             src_text=text,
             style_ref_wav_path=str(speaker_reference),
             timbre_ref_wav_path=str(speaker_reference),
-            style_ref_wav_text=prompt_text,
+            style_ref_wav_text=text_reference,
             src_text_language=language,
             style_ref_wav_text_language=language,
         )

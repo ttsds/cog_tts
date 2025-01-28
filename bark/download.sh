@@ -3,6 +3,9 @@ if [ ! -d "checkpoints/bark/suno/bark_v0" ]; then
     mkdir -p checkpoints/bark/suno
     git clone https://huggingface.co/suno/bark checkpoints/bark/suno/bark_v0
     rm -rf checkpoints/bark/suno/bark_v0/.git
+    rm checkpoints/bark/suno/bark_v0/coarse.pt
+    rm checkpoints/bark/suno/bark_v0/fine.pt
+    rm checkpoints/bark/suno/bark_v0/text.pt
 fi
 if [ ! -d "checkpoints/bark_vc_en" ]; then
     git clone https://huggingface.co/GitMylo/bark-voice-cloning checkpoints/bark_vc_en

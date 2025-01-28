@@ -11,7 +11,6 @@ from cog import BasePredictor, Input
 
 from encodec import EncodecModel
 import nltk
-from transformers import pipeline
 import torch
 import librosa
 import torchaudio
@@ -88,22 +87,6 @@ class Predictor(BasePredictor):
             device=device,
         )
 
-        # ----------------
-        # whisper
-        # ----------------
-        if GPU:
-            self.whisper = pipeline(
-                "automatic-speech-recognition",
-                model="/src/checkpoints/whisper-large-v3-turbo", 
-                torch_dtype=torch.float16,
-                device="cuda"
-            )
-        else:
-            self.whisper = pipeline(
-                "automatic-speech-recognition",
-                model="/src/checkpoints/whisper-large-v3-turbo", 
-            )
-
     def predict(
         self,
         model: str = cog.Input(
@@ -115,6 +98,7 @@ class Predictor(BasePredictor):
         ),
         text: str = cog.Input(),
         speaker_reference: cog.Path = cog.Input(),
+        text_reference: str = cog.Input(),
     ) -> cog.Path:
         """Run a single prediction on the model"""
         # random output dir
@@ -125,8 +109,7 @@ class Predictor(BasePredictor):
         if model == "valle_v1_small":
             # see https://github.com/open-mmlab/Amphion/tree/main/egs/tts/VALLE
             self.valle_v1_small.args.text = text
-            text_prompt = self.whisper(str(speaker_reference))["text"]
-            self.valle_v1_small.args.text_prompt = text_prompt
+            self.valle_v1_small.args.text_prompt = text_reference
             self.valle_v1_small.args.audio_prompt = str(speaker_reference)
             self.valle_v1_small.args.output_dir = output_dir
             self.valle_v1_small.inference()
@@ -134,8 +117,7 @@ class Predictor(BasePredictor):
         elif model == "valle_v1_medium":
             # see https://github.com/open-mmlab/Amphion/tree/main/egs/tts/VALLE
             self.valle_v1_medium.args.text = text
-            text_prompt = self.whisper(str(speaker_reference))["text"]
-            self.valle_v1_medium.args.text_prompt = text_prompt
+            self.valle_v1_medium.args.text_prompt = text_reference
             self.valle_v1_medium.args.audio_prompt = str(speaker_reference)
             self.valle_v1_medium.args.output_dir = output_dir
             self.valle_v1_medium.inference()
@@ -144,8 +126,7 @@ class Predictor(BasePredictor):
             # see https://github.com/open-mmlab/Amphion/blob/main/egs/tts/VALLE_V2/demo.ipynb
             wav, _ = librosa.load(str(speaker_reference), sr=16000)
             wav = torch.tensor(wav, dtype=torch.float32)
-            text_prompt = self.whisper(str(speaker_reference))["text"]
-            text_prompt = self.g2p_processor(text_prompt, "en")[1]
+            text_prompt = self.g2p_processor(text_reference, "en")[1]
             text = self.g2p_processor(text, "en")[1]
             text_prompt = torch.tensor(text_prompt, dtype=torch.long)
             text = torch.tensor(text, dtype=torch.long)

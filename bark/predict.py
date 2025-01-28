@@ -72,7 +72,6 @@ class Predictor(BasePredictor):
             text_use_small=False,
             coarse_use_small=False,
             fine_use_small=False,
-            device=device,
         )
 
     def predict(
@@ -109,7 +108,9 @@ class Predictor(BasePredictor):
         print("Tokenizing semantics...")
         semantic_tokens = self.tokenizers[language].get_token(semantic_vectors)
         print("Creating coarse and fine prompts...")
+        wav = wav.cpu()
         wav = convert_audio(wav, sr, self.encodec.sample_rate, 1).unsqueeze(0)
+        wav = wav.to(self.device)
         with torch.no_grad():
             encoded_frames = self.encodec.encode(wav)
             codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1).squeeze()

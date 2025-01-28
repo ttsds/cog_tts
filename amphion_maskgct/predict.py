@@ -9,7 +9,6 @@ from hashlib import sha256
 import cog
 from cog import BasePredictor
 
-from transformers import pipeline
 import torch
 import torchaudio
 import numpy as np
@@ -113,22 +112,6 @@ class Predictor(BasePredictor):
         self.semantic_mean = semantic_mean
         self.semantic_std = semantic_std
 
-        # ----------------
-        # whisper
-        # ----------------
-        if GPU:
-            self.whisper = pipeline(
-                "automatic-speech-recognition",
-                model="/src/checkpoints/_whisper-large-v3-turbo",
-                torch_dtype=torch.float16,
-                device="cuda",
-            )
-        else:
-            self.whisper = pipeline(
-                "automatic-speech-recognition",
-                model="/src/checkpoints/_whisper-large-v3-turbo",
-            )
-
     def predict(
         self,
         language: str = cog.Input(
@@ -139,13 +122,14 @@ class Predictor(BasePredictor):
         ),
         text: str = cog.Input(),
         speaker_reference: cog.Path = cog.Input(),
+        text_reference: str = cog.Input(),
     ) -> cog.Path:
         """Run a single prediction on the model"""
         # random output dir
         output_dir = "/results/" + sha256(np.random.bytes(32)).hexdigest()
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-        prompt_text = self.whisper(str(speaker_reference))["text"]
+        prompt_text = text_reference
 
         maskgct_inference_pipeline = MaskGCT_Inference_Pipeline(
             self.semantic_model,
