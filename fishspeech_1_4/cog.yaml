@@ -39,7 +39,7 @@ build:
   run:
     - "git clone https://github.com/fishaudio/fish-speech.git /home/fish_speech"
     - "cd /home/fish_speech && git fetch --all --tags"
-    - "cd /home/fish_speech && git checkout tags/v1.1.2"
+    - "cd /home/fish_speech && git checkout tags/v1.4.3"
     - "cd /home/fish_speech && sed -i 's/\"fish_speech\"/\"fish_speech\", \"tools\"/' pyproject.toml"
     - "cat /home/fish_speech/pyproject.toml"
     - "export CFLAGS=\"-fPIC\""
@@ -49,4 +49,4 @@ build:
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
 
-image: "r8.im/ttsds/fishspeech_1_0"
+image: "r8.im/ttsds/fishspeech_1_4"

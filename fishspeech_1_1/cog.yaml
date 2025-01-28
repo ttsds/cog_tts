@@ -49,4 +49,4 @@ build:
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
 
-image: "r8.im/ttsds/fishspeech_1_0"
+image: "r8.im/ttsds/fishspeech_1_1"
