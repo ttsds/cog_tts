@@ -1,9 +1,9 @@
 mkdir -p checkpoints
-if [ ! -d "checkpoints/vevo" ]; then
-    git clone https://huggingface.co/amphion/Vevo checkpoints/vevo
-    rm -rf checkpoints/vevo/.git
+if [ ! -d "checkpoints/_vevo" ]; then
+    git clone https://huggingface.co/amphion/Vevo checkpoints/_vevo
+    rm -rf checkpoints/_vevo/.git
 fi
-if [ ! -d "checkpoints/_whisper-large-v3-turbo" ]; then
-    git clone https://huggingface.co/openai/whisper-large-v3-turbo checkpoints/_whisper-large-v3-turbo
-    rm -rf checkpoints/_whisper-large-v3-turbo/.git
+if [ ! -d "checkpoints/hubert" ]; then
+    mkdir -p checkpoints/hubert
+    wget https://download.pytorch.org/torchaudio/models/hubert_fairseq_large_ll60k.pth -O checkpoints/hubert/hubert_fairseq_large_ll60k.pth 
 fi

@@ -33,20 +33,20 @@ class Predictor(BasePredictor):
         # ----------------
         Path("/root/.cache/torch/hub/checkpoints/").mkdir(parents=True, exist_ok=True)
         shutil.copy(
-            "/src/checkpoints/hubert_fairseq_large_ll60k.pth",
+            "/src/checkpoints/hubert/hubert_fairseq_large_ll60k.pth",
             "/root/.cache/torch/hub/checkpoints/hubert_fairseq_large_ll60k.pth",
         )
 
         # ----------------
         # vevo
         # ----------------
-        content_style_tokenizer_ckpt_path = "/src/checkpoints/vevo/tokenizer/vq8192"
+        content_style_tokenizer_ckpt_path = "/src/checkpoints/_vevo/tokenizer/vq8192"
         ar_cfg_path = "/Amphion/models/vc/vevo/config/PhoneToVq8192.json"
-        ar_ckpt_path = "/src/checkpoints/vevo/contentstyle_modeling/PhoneToVq8192"
+        ar_ckpt_path = "/src/checkpoints/_vevo/contentstyle_modeling/PhoneToVq8192"
         fmt_cfg_path = "./models/vc/vevo/config/Vq8192ToMels.json"
-        fmt_ckpt_path = "/src/checkpoints/vevo/acoustic_modeling/Vq8192ToMels"
+        fmt_ckpt_path = "/src/checkpoints/_vevo/acoustic_modeling/Vq8192ToMels"
         vocoder_cfg_path = "./models/vc/vevo/config/Vocoder.json"
-        vocoder_ckpt_path = "/src/checkpoints/vevo/acoustic_modeling/Vocoder"
+        vocoder_ckpt_path = "/src/checkpoints/_vevo/acoustic_modeling/Vocoder"
         self.vevo = VevoInferencePipeline(
         content_style_tokenizer_ckpt_path=content_style_tokenizer_ckpt_path,
             ar_cfg_path=ar_cfg_path,

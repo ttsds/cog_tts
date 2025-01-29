@@ -7,14 +7,11 @@ import sys
 from hashlib import sha256
 
 import cog
-from cog import BasePredictor, Input
+from cog import BasePredictor
 
 from encodec import EncodecModel
 import nltk
-from transformers import pipeline
 import torch
-import librosa
-import torchaudio
 import numpy as np
 
 # ----------------

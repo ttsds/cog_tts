@@ -14,7 +14,3 @@ if [ ! -d "checkpoints/valle_v2" ]; then
     mv checkpoints/valle_v2/SpeechTokenizer.pt checkpoints/valle_v2/tokenizer/SpeechTokenizer.pt
     mv checkpoints/valle_v2/config.json checkpoints/valle_v2/tokenizer/config.json
 fi
-if [ ! -d "checkpoints/whisper-large-v3-turbo" ]; then
-    git clone https://huggingface.co/openai/whisper-large-v3-turbo checkpoints/whisper-large-v3-turbo
-    rm -rf checkpoints/whisper-large-v3-turbo/.git
-fi

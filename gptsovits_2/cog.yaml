@@ -1,0 +1,37 @@
+# Configuration for Cog ⚙️
+# Reference: https://cog.run/yaml
+
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+
+  # a list of ubuntu apt packages to install
+  system_packages:
+    - git
+    - git-lfs
+    - libsox-dev
+    - ffmpeg
+    - gcc
+    - build-essential
+    - g++-12
+    - espeak-ng
+
+  python_version: "3.10"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "torch==2.3.0"
+    - "torchaudio==2.3.0"
+    - "matplotlib==3.10.0"
+
+  # commands run after the environment is setup
+  run:
+    - "git clone https://github.com/RVC-Boss/GPT-SoVITS.git gptsovits"
+    - "cd gptsovits && git checkout eee607b"
+    - "cd gptsovits && sed -i 's/if (wav16k.shape[0] > 160000 or wav16k.shape[0] < 48000):/if True:/g' GPT_SoVITS/inference_webui.py"
+    - "cd gptsovits && pip install -r requirements.txt"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+
+image: "r8.im/ttsds/gptsovits_2"
