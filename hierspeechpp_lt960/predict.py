@@ -19,8 +19,8 @@ class Predictor(BasePredictor):
         device = "cuda" if GPU else "cpu"  
 
         self.hierspeechpp = HierspeechSynthesizer(
-            hierspeech_ckpt="/src/checkpoints/hierspeechpp_libritts460/hierspeechpp_lt460_ckpt.pth",
-            config_hierspeech="/src/checkpoints/hierspeechpp_libritts460/config.json",
+            hierspeech_ckpt="/src/checkpoints/hierspeechpp_libritts960/hierspeechpp_lt960_ckpt.pth",
+            config_hierspeech="/src/checkpoints/hierspeechpp_libritts960/config.json",
             text2w2v_ckpt="/src/checkpoints/ttv_libritts_v1/ttv_lt960_ckpt.pth",
             config_text2w2v="/src/checkpoints/ttv_libritts_v1/config.json",
             device=device

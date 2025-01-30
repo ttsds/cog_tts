@@ -1,0 +1,49 @@
+# Configuration for Cog ⚙️
+# Reference: https://cog.run/yaml
+
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+
+  # a list of ubuntu apt packages to install
+  system_packages:
+    - git
+    - git-lfs
+    - libsox-dev
+    - ffmpeg
+    - gcc
+    - build-essential
+    - espeak
+    - espeak-ng
+    - festival
+
+  # python version in the form '3.11' or '3.11.4'
+  python_version: "3.10"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "AMFM_decompy==1.0.11"
+    - "Cython==3.0.3"
+    - "einops==0.7.0"
+    - "joblib==1.3.2"
+    - "matplotlib==3.8.1"
+    - "numpy==1.26.1"
+    - "pesq==0.0.4"
+    - "phonemizer==3.2.1"
+    - "scipy==1.11.3"
+    - "timm==0.6.13"
+    - "torch==1.13.1"
+    - "torchaudio==0.13.1"
+    - "tqdm==4.65.0"
+    - "transformers==4.34.0"
+    - "Unidecode==1.3.7"
+
+  run:
+    - "apt-get update"
+    - "apt-get install -y espeak-ng"
+    - "git clone https://github.com/sh-lee-prml/HierSpeechpp.git hierspeechpp"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+
+image: "r8.im/ttsds/hierspeechpp_1"

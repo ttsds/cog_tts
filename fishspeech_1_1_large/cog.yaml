@@ -1,0 +1,52 @@
+# Configuration for Cog ⚙️
+# Reference: https://cog.run/yaml
+
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+
+  # a list of ubuntu apt packages to install
+  system_packages:
+    - git
+    - curl
+    - git-lfs
+    - cmake
+    - gcc
+    - g++-12
+    - build-essential
+    - libsox-dev
+    - ffmpeg
+    - libsm6
+    - libxext6
+    - libjpeg-dev
+    - zlib1g-dev
+    - aria2
+    - zsh
+    - openssh-server
+    - protobuf-compiler
+    - portaudio19-dev
+
+  # python version in the form '3.11' or '3.11.4'
+  python_version: "3.11"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "torch==2.3.0"
+    - "torchaudio==2.3.0"
+    - "matplotlib==3.10.0"
+
+  # commands run after the environment is setup
+  run:
+    - "git clone https://github.com/fishaudio/fish-speech.git /home/fish_speech"
+    - "cd /home/fish_speech && git fetch --all --tags"
+    - "cd /home/fish_speech && git checkout tags/v1.1.2"
+    - "cd /home/fish_speech && sed -i 's/\"fish_speech\"/\"fish_speech\", \"tools\"/' pyproject.toml"
+    - "cat /home/fish_speech/pyproject.toml"
+    - "export CFLAGS=\"-fPIC\""
+    - "export CXXFLAGS=\"-fPIC\""
+    - "cd /home/fish_speech && pip install -e ."
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+
+image: "r8.im/ttsds/fishspeech_1_1_large"
