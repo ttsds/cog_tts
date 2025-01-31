@@ -1,4 +1,8 @@
 import sys
+import shutil
+from pathlib import Path
+from hashlib import sha256
+import numpy as np
 
 sys.path.append('/metavoice')
 
@@ -18,6 +22,9 @@ class Predictor(BasePredictor):
         text: str = cog.Input(),
         speaker_reference: cog.Path = cog.Input(),
     ) -> cog.Path:
+        output_dir = "/results/" + sha256(np.random.bytes(32)).hexdigest()
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+
         top_p = 0.95
         guidance_scale = 3.0
         temperature = 1.0
@@ -30,4 +37,6 @@ class Predictor(BasePredictor):
             temperature=temperature,
         )
 
-        return cog.Path(wav_file_path)
+        shutil.copy(wav_file_path, output_dir + "/output.wav")
+
+        return cog.Path(output_dir + "/output.wav")

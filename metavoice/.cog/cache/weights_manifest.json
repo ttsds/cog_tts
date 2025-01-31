@@ -1,0 +1,1 @@
+{"files":{"checkpoints/metavoice/.gitattributes":{"crc32":"aa0da183"},"checkpoints/metavoice/README.md":{"crc32":"3b9d7a86"},"checkpoints/metavoice/config.json":{"crc32":"8c0cd023"},"checkpoints/metavoice/first_stage.pt":{"crc32":"b970d341"},"checkpoints/metavoice/second_stage.pt":{"crc32":"dcf3474a"},"checkpoints/metavoice/speaker_encoder.pt":{"crc32":"8f56fd60"}}}
