@@ -1,0 +1,40 @@
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+
+  # a list of ubuntu apt packages to install
+  system_packages:
+    - git
+    - git-lfs
+    - libsox-dev
+    - ffmpeg
+    - gcc
+    - build-essential
+    - g++-12
+    - espeak-ng
+
+  # python version in the form '3.11' or '3.11.4'
+  python_version: "3.10"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "torch==1.13.1"
+    - "torchaudio==0.13.1"
+    - "nltk==3.6.2"
+
+  # commands run after the environment is setup
+  run:
+    - "git clone https://github.com/myshell-ai/OpenVoice.git openvoice"
+    - "cd openvoice && git checkout 34874b77e8ed4fd63ebafcfefafbe31002748486"
+    - "cd openvoice && sed -i \"s/assert num_splits > 0, 'input audio is too short'/num_splits=max(num_splits,1)/g\" openvoice/se_extractor.py"
+    - "cd openvoice && sed -i 's/if kwargs.get('enable_watermark', True):/if False:/' openvoice/api.py"
+    - "cd openvoice && pip install -r requirements.txt"
+    - "cd openvoice && pip install ."
+    - "apt-get update && apt-get install ffmpeg libsndfile1 -y"
+    - "pip install git+https://github.com/myshell-ai/MeloTTS.git@5b538481e24e0d578955be32a95d88fcbde26dc8"
+    - "python -m unidic download"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+
+image: "r8.im/ttsds/openvoice_2"
