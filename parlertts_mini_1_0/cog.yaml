@@ -19,13 +19,13 @@ build:
   python_packages:
     - "torch==2.2.2"
     - "torchaudio==2.2.2"
-    - "transformers==4.43.3"
+    - "transformers==4.48.1"
     - "numpy<2"
 
   # commands run after the environment is setup
   run:
-    - "git clone https://github.com/apresence/parler-tts parlertts"
-    - "cd parlertts && git checkout 91063f38c4079e051d2c5db32db2f7d04bafafc4"
+    - "git clone https://github.com/huggingface/parler-tts parlertts"
+    - "cd parlertts && git checkout d108732cd57788ec86bc857d99a6cabd66663d68"
     - "cd parlertts && pip install -e ."
 
 
