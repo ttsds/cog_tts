@@ -19,7 +19,7 @@ build:
   python_packages:
     - "torch==2.2.2"
     - "torchaudio==2.2.2"
-    - "transformers==4.48.1"
+    - "transformers==4.43.3"
     - "numpy<2"
 
   # commands run after the environment is setup
@@ -32,4 +32,4 @@ build:
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
 
-image: "r8.im/ttsds/parlertts_mini_0_1"
+image: "r8.im/ttsds/parlertts_mini_1_0"
