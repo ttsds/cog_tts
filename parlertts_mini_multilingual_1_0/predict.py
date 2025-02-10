@@ -16,7 +16,7 @@ class Predictor(BasePredictor):
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
         self.device = "cuda" if GPU else "cpu"
-        model_path = "/src/checkpoints/parlertts_mini_expresso"
+        model_path = "/src/checkpoints/parlertts_mini_multilingual"
         self.model = ParlerTTSForConditionalGeneration.from_pretrained(model_path).to(self.device)
         self.sr = self.model.config.sampling_rate
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -40,8 +40,7 @@ class Predictor(BasePredictor):
             input_values = self.feature_extractor(
                 init_audio, sampling_rate=self.sr, return_tensors="pt"
             )
-            padding_mask = input_values.padding_mask.to(self.device)
-            input_values = input_values.input_values.to(self.device)
+            input_values = torch.tensor(input_values.input_values).to(self.device)
             prompt_input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.to(self.device)
             text_reference = text_reference.strip()
             if text_reference[-1] not in [".", "!", "?"]:
@@ -53,7 +52,6 @@ class Predictor(BasePredictor):
                 input_ids=prompt_input_ids,
                 prompt_input_ids=text_input_ids,
                 input_values=input_values,
-                padding_mask=padding_mask,
                 generation_config=self.model.generation_config,
             )
             generation = generation[0, input_values.shape[2]:].cpu().unsqueeze(0)
