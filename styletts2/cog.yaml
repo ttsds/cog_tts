@@ -5,7 +5,6 @@ build:
   # set to true if your model requires a GPU
   gpu: true
 
-  # a list of ubuntu apt packages to install
   # git git-lfs libsox-dev ffmpeg gcc build-essential g++-12 espeak-ng
   system_packages:
     - git
@@ -22,16 +21,15 @@ build:
 
   # a list of packages in the format <package-name>==<version>
   python_packages:
-    - "torch==2.0.1"
-
-  # commands run after the environment is setup
-  run:
-    - "git clone https://github.com/PolyAI-LDN/pheme.git"
-    - "cd pheme && git checkout a0b73f9379fd55a069842ff2c3c48ec0fd0bdc6a"
-    - "cd pheme && pip install -r requirements.txt --no-deps"
-    - "pip install pyannote-audio==3.1.1"
+    - "torch==2.2.0"
+    - "torchaudio==2.2.0"
+    - "transformers==4.48.3"
+    - "speechbrain==1.0.2"
+    - "soundfile==0.13.1"
+    - "numpy==1.21.2"
+    - "sentencepiece==0.2.0"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
 
-image: "r8.im/ttsds/pheme"
+image: "r8.im/ttsds/speecht5"

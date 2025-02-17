@@ -1,0 +1,35 @@
+# Configuration for Cog ⚙️
+# Reference: https://cog.run/yaml
+
+build:
+  gpu: true
+
+  system_packages:
+    - git
+    - git-lfs
+    - libsox-dev
+    - ffmpeg
+    - gcc
+    - build-essential
+    - g++-12
+    - espeak-ng
+
+  python_version: "3.10"
+
+  python_packages:
+    - "torch==2.2.2"
+    - "torchaudio==2.2.2"
+    - "transformers==4.43.1"
+    - "numpy<2"
+
+  # commands run after the environment is setup
+  run:
+    - "git clone https://github.com/huggingface/parler-tts parlertts"
+    - "cd parlertts && git checkout d108732cd57788ec86bc857d99a6cabd66663d68"
+    - "cd parlertts && pip install -e ."
+
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+
+image: "r8.im/ttsds/parlertts_tiny_1_0"
