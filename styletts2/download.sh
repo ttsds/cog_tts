@@ -1,13 +1,9 @@
 mkdir -p checkpoints
-if [ ! -d checkpoints/speecht5 ]; then
-    git clone https://huggingface.co/microsoft/speecht5_tts checkpoints/speecht5
-    rm -rf checkpoints/speecht5/.git
+if [ ! -d checkpoints/styletts2 ]; then
+    git clone https://github.com/yl4579/StyleTTS2.git checkpoints/styletts2
+    rm -rf checkpoints/styletts2/.git
 fi
-if [ ! -d checkpoints/xvector ]; then
-    git clone https://huggingface.co/speechbrain/spkrec-xvect-voxceleb checkpoints/xvector
-    rm -rf checkpoints/xvector/.git
-fi
-if [ ! -d checkpoints/speecht5_hifigan ]; then
-    git clone https://huggingface.co/microsoft/speecht5_hifigan checkpoints/speecht5_hifigan
-    rm -rf checkpoints/speecht5_hifigan/.git
+if [ ! -d checkpoints/models ]; then
+    git clone https://huggingface.co/yl4579/StyleTTS2-LibriTTS checkpoints/models
+    rm -rf checkpoints/models/.git
 fi

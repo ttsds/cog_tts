@@ -21,15 +21,31 @@ build:
 
   # a list of packages in the format <package-name>==<version>
   python_packages:
-    - "torch==2.2.0"
-    - "torchaudio==2.2.0"
-    - "transformers==4.48.3"
-    - "speechbrain==1.0.2"
-    - "soundfile==0.13.1"
-    - "numpy==1.21.2"
-    - "sentencepiece==0.2.0"
+    - SoundFile
+    - torchaudio
+    - munch
+    - torch==1.13.1
+    - pydub
+    - pyyaml
+    - librosa
+    - nltk
+    - matplotlib
+    - accelerate
+    - transformers
+    - phonemizer
+    - einops
+    - einops-exts
+    - tqdm
+    - typing-extensions
+    - Cython
+    - "numpy<2"
+
+  run:
+    - pip install git+https://github.com/resemble-ai/monotonic_align.git
+    - "apt-get update"
+    - "apt-get install -y espeak-ng"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
 
-image: "r8.im/ttsds/speecht5"
+image: "r8.im/ttsds/styletts2"
