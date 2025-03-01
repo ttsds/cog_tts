@@ -21,13 +21,10 @@ build:
 
   # a list of packages in the format <package-name>==<version>
   python_packages:
-    - torchaudio
-    - torch==2.0.1
-    - WhisperSpeech==0.8.9
-    - webdataset
+    - coqui-tts==0.25.3
     - numpy<2
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
 
-image: "r8.im/ttsds/whisperspeech"
+image: "r8.im/ttsds/xtts_1"
