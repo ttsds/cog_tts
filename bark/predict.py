@@ -38,7 +38,6 @@ class Predictor(BasePredictor):
             "de": CustomTokenizer.load_from_checkpoint(
                 "/src/checkpoints/bark_vc_code/data//models/hubert/tokenizer_de.pth",
                 map_location=device,
-                
             ),
             "es": CustomTokenizer.load_from_checkpoint(
                 "/src/checkpoints/bark_vc_code/data//models/hubert/tokenizer_es.pth",
@@ -113,7 +112,9 @@ class Predictor(BasePredictor):
         wav = wav.to(self.device)
         with torch.no_grad():
             encoded_frames = self.encodec.encode(wav)
-            codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1).squeeze()
+            codes = torch.cat(
+                [encoded[0] for encoded in encoded_frames], dim=-1
+            ).squeeze()
         codes = codes.cpu()
         semantic_tokens = semantic_tokens.cpu()
         npz_file = Path(output_dir) / "prompt.npz"
@@ -127,9 +128,7 @@ class Predictor(BasePredictor):
         # ----------------
         # bark tts
         # ----------------
-        audio_array = generate_audio(
-            text, history_prompt=str(npz_file)
-        )
+        audio_array = generate_audio(text, history_prompt=str(npz_file))
         output_path = Path(output_dir) / "test_pred.wav"
         sf.write(str(output_path), audio_array, SAMPLE_RATE)
         return cog.Path(output_path)

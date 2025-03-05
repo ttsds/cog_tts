@@ -23,6 +23,12 @@ torch._inductor.config.triton.unique_kernel_names = True
 
 GPU = torch.cuda.is_available()
 
+
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
@@ -33,14 +39,11 @@ class Predictor(BasePredictor):
             device=self.device,
         )
         self.llama, self.decode_one_token = load_llama(
-            "/src/checkpoints/fishspeech",
-            self.device,
-            torch.bfloat16,
-            compile=False
+            "/src/checkpoints/fishspeech", self.device, torch.bfloat16, compile=False
         )
         if GPU:
             torch.cuda.synchronize()
-        
+        print(f"Model params: {get_model_params(self.llama)}")
 
     def predict(
         self,
@@ -50,20 +53,22 @@ class Predictor(BasePredictor):
     ) -> cog.Path:
         output_dir = "/results/" + sha256(np.random.bytes(32)).hexdigest()
         Path(output_dir).mkdir(parents=True, exist_ok=True)
-        
+
         # ----------------
         # vqgan
         # ----------------
         audio, sr = torchaudio.load(str(speaker_reference))
         if audio.shape[0] > 1:
             audio = audio.mean(0, keepdim=True)
-        audio = torchaudio.functional.resample(audio, sr, self.vqgan.spec_transform.sample_rate)
+        audio = torchaudio.functional.resample(
+            audio, sr, self.vqgan.spec_transform.sample_rate
+        )
         audios = audio[None].to(self.vqgan.device)
         audio_lengths = torch.tensor(
             [audios.shape[2]], device=self.vqgan.device, dtype=torch.long
         )
         prompt_tokens = self.vqgan.encode(audios, audio_lengths)[0][0]
-        
+
         # ----------------
         # llama
         # ----------------
@@ -92,7 +97,9 @@ class Predictor(BasePredictor):
             elif response.action == "next":
                 if codes:
                     codes = torch.cat(codes, dim=1).to(self.device).long()
-                    feature_lengths = torch.tensor([codes.shape[1]], device=self.vqgan.device)
+                    feature_lengths = torch.tensor(
+                        [codes.shape[1]], device=self.vqgan.device
+                    )
                     fake_audios = self.vqgan.decode(
                         indices=codes[None], feature_lengths=feature_lengths
                     )
@@ -100,7 +107,9 @@ class Predictor(BasePredictor):
                     if isinstance(fake_audio, torch.Tensor):
                         fake_audio = fake_audio.detach().numpy()
                     output_path = Path(output_dir) / f"generated.wav"
-                    sf.write(output_path, fake_audio, self.vqgan.spec_transform.sample_rate)
+                    sf.write(
+                        output_path, fake_audio, self.vqgan.spec_transform.sample_rate
+                    )
                 print(f"Next sample")
                 codes = []
             else:

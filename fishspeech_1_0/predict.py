@@ -24,6 +24,12 @@ torch._inductor.config.triton.unique_kernel_names = True
 
 GPU = torch.cuda.is_available()
 
+
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
@@ -39,11 +45,12 @@ class Predictor(BasePredictor):
             self.device,
             torch.bfloat16,
             2048,
-            compile=False
+            compile=False,
         )
         if GPU:
             torch.cuda.synchronize()
         self.tokenizer = AutoTokenizer.from_pretrained("/src/checkpoints/fishspeech")
+        print(f"Model params: {get_model_params(self.llama)}")
 
     def predict(
         self,
@@ -53,7 +60,7 @@ class Predictor(BasePredictor):
     ) -> cog.Path:
         output_dir = "/results/" + sha256(np.random.bytes(32)).hexdigest()
         Path(output_dir).mkdir(parents=True, exist_ok=True)
-        
+
         # ----------------
         # vqgan
         # ----------------
@@ -66,7 +73,7 @@ class Predictor(BasePredictor):
             [audios.shape[2]], device=self.vqgan.device, dtype=torch.long
         )
         prompt_tokens = self.vqgan.encode(audios, audio_lengths)[0][0]
-        
+
         # ----------------
         # llama
         # ----------------
@@ -98,9 +105,13 @@ class Predictor(BasePredictor):
             elif response.action == "next":
                 if codes:
                     codes = torch.cat(codes, dim=1).to(self.device).long()
-                    feature_lengths = torch.tensor([codes.shape[1]], device=self.vqgan.device)
+                    feature_lengths = torch.tensor(
+                        [codes.shape[1]], device=self.vqgan.device
+                    )
                     fake_audios = self.vqgan.decode(
-                        indices=codes[None], feature_lengths=feature_lengths, return_audios=True
+                        indices=codes[None],
+                        feature_lengths=feature_lengths,
+                        return_audios=True,
                     )
                     fake_audio = fake_audios[0, 0].float().cpu().numpy()
                     output_path = Path(output_dir) / f"generated.wav"

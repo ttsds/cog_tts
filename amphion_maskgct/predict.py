@@ -28,6 +28,11 @@ from utils.util import load_config
 GPU = torch.cuda.is_available()
 
 
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         device = "cuda" if GPU else "cpu"
@@ -51,7 +56,7 @@ class Predictor(BasePredictor):
         s2a_model_1layer = build_s2a_model(cfg.model.s2a_model.s2a_1layer, device)
         s2a_model_full = build_s2a_model(cfg.model.s2a_model.s2a_full, device)
         # load semantic codec
-        base = "/src/checkpoints/_maskgct/"
+        base = "/src/checkpoints/maskgct/"
 
         if GPU:
             safetensors.torch.load_model(
@@ -112,6 +117,24 @@ class Predictor(BasePredictor):
         self.semantic_mean = semantic_mean
         self.semantic_std = semantic_std
 
+        print(f"Semantic model params: {get_model_params(self.semantic_model)}")
+        print(f"Semantic codec params: {get_model_params(self.semantic_codec)}")
+        print(f"Codec encoder params: {get_model_params(self.codec_encoder)}")
+        print(f"Codec decoder params: {get_model_params(self.codec_decoder)}")
+        print(f"T2S model params: {get_model_params(self.t2s_model)}")
+        print(f"S2A model 1layer params: {get_model_params(self.s2a_model_1layer)}")
+        print(f"S2A model full params: {get_model_params(self.s2a_model_full)}")
+        print(
+            f"""Total params: {
+                get_model_params(self.semantic_model) +
+                get_model_params(self.semantic_codec) +
+                get_model_params(self.codec_encoder) +
+                get_model_params(self.codec_decoder) +
+                get_model_params(self.t2s_model) +
+                get_model_params(self.s2a_model_1layer) +
+                get_model_params(self.s2a_model_full)}"""
+        )
+
     def predict(
         self,
         language: str = cog.Input(
@@ -154,6 +177,8 @@ class Predictor(BasePredictor):
         )
 
         recovered_audio = torch.tensor(recovered_audio)
-        torchaudio.save(output_dir + "/test_pred.wav", recovered_audio.unsqueeze(0), 24000)
+        torchaudio.save(
+            output_dir + "/test_pred.wav", recovered_audio.unsqueeze(0), 24000
+        )
 
         return cog.Path(output_dir + "/test_pred.wav")

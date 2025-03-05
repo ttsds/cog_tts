@@ -16,13 +16,21 @@ from cog import BasePredictor
 
 GPU = torch.cuda.is_available()
 
+
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
         soVITS_ckpt = "/src/checkpoints/gptsovits/s2G488k.pth"
-        gpt_ckpt    = "/src/checkpoints/gptsovits/s1bert25hz-2kh-longer-epoch=68e-step=50232.ckpt"
+        gpt_ckpt = (
+            "/src/checkpoints/gptsovits/s1bert25hz-2kh-longer-epoch=68e-step=50232.ckpt"
+        )
         cnhubert_path = "/src/checkpoints/gptsovits/chinese-hubert-base"
-        bert_path   = "/src/checkpoints/gptsovits/chinese-roberta-wwm-ext-large"
+        bert_path = "/src/checkpoints/gptsovits/chinese-roberta-wwm-ext-large"
 
         self.device = torch.device("cuda" if GPU else "cpu")
 
@@ -32,17 +40,15 @@ class Predictor(BasePredictor):
             cnhubert_base_path=cnhubert_path,
             bert_path=bert_path,
             device=self.device,
-            is_half=True
+            is_half=True,
         )
-
-        nltk.download('averaged_perceptron_tagger_eng')
+        print(f"Model params: {get_model_params(self.pipeline.t2s_model)}")
+        nltk.download("averaged_perceptron_tagger_eng")
 
     def predict(
         self,
         text: str = cog.Input(),
-        language: str = cog.Input(
-            choices=LANGS
-        ),
+        language: str = cog.Input(choices=LANGS),
         speaker_reference: cog.Path = cog.Input(),
         text_reference: str = cog.Input(),
     ) -> cog.Path:
@@ -62,7 +68,7 @@ class Predictor(BasePredictor):
             temperature=1.0,
             ref_free=False,
             speed=1.0,
-            references=None
+            references=None,
         )
         audio_float = torch.from_numpy(audio_int16).float()
         audio_float = audio_float / 32768.0

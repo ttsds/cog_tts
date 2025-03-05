@@ -14,6 +14,11 @@ import cog
 GPU = torch.cuda.is_available()
 
 
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         nltk.download("averaged_perceptron_tagger_eng")
@@ -49,6 +54,10 @@ class Predictor(BasePredictor):
         )
         self.tone_color_converter.load_ckpt(
             "/src/checkpoints/openvoice/checkpoints/converter/checkpoint.pth"
+        )
+
+        print(
+            f"Model params: {get_model_params(self.base_speaker_en.model)+get_model_params(self.tone_color_converter.model)}"
         )
 
     def predict(

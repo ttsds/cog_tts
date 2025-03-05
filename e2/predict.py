@@ -18,6 +18,12 @@ import cog
 
 GPU = torch.cuda.is_available()
 
+
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         self.vocoder = load_vocoder()
@@ -26,6 +32,7 @@ class Predictor(BasePredictor):
         self.device = torch.device("cuda" if GPU else "cpu")
         self.e2 = load_model(UNetT, model_cfg, model_path, device=self.device)
 
+        print(f"E2 model params: {get_model_params(self.e2)}")
 
     def predict(
         self,

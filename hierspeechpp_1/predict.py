@@ -12,18 +12,27 @@ import cog
 
 GPU = torch.cuda.is_available()
 
+
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
-        
-        device = "cuda" if GPU else "cpu"  
+
+        device = "cuda" if GPU else "cpu"
 
         self.hierspeechpp = HierspeechSynthesizer(
             hierspeech_ckpt="/src/checkpoints/hierspeechpp_eng_kor/hierspeechpp_v1_ckpt.pth",
             config_hierspeech="/src/checkpoints/hierspeechpp_eng_kor/config.json",
             text2w2v_ckpt="/src/checkpoints/ttv_libritts_v1/ttv_lt960_ckpt.pth",
             config_text2w2v="/src/checkpoints/ttv_libritts_v1/config.json",
-            device=device
+            device=device,
+        )
+        print(
+            f"Model params: {get_model_params(self.hierspeechpp.net_g)+get_model_params(self.hierspeechpp.text2w2v)}"
         )
 
     def predict(
@@ -40,9 +49,9 @@ class Predictor(BasePredictor):
             noise_scale_ttv=0.333,
             noise_scale_vc=0.333,
             denoise_ratio=0.0,
-            scale_norm='prompt'
+            scale_norm="prompt",
         )
-        
+
         output_path = f"{output_dir}/output.wav"
         out_wav = torch.tensor(out_wav)
         torchaudio.save(output_path, out_wav, sr)

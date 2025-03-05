@@ -24,15 +24,22 @@ sys.path.append(".")
 from models.tts.naturalspeech2.ns2_inference import NS2Inference
 from utils.util import load_config
 
+
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 GPU = torch.cuda.is_available()
+
 
 class Predictor(BasePredictor):
     def setup(self) -> None:
         # generic
         EncodecModel.encodec_model_24khz()
-        nltk.download('averaged_perceptron_tagger_eng')
+        nltk.download("averaged_perceptron_tagger_eng")
         device = "cuda" if GPU else "cpu"
-        
+
         # ----------------
         # naturalspeech2
         # ----------------
@@ -59,6 +66,9 @@ class Predictor(BasePredictor):
         ns_args = argparse.Namespace(**args)
         cfg = load_config(ns_args.config)
         self.naturalspeech2 = NS2Inference(ns_args, cfg)
+
+        print(f"NS2 model params: {get_model_params(self.naturalspeech2.model)}")
+        print(f"NS2 codec params: {get_model_params(self.naturalspeech2.codec)}")
 
     def predict(
         self,

@@ -22,6 +22,11 @@ from models.vc.vevo.vevo_utils import *
 GPU = torch.cuda.is_available()
 
 
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         device = "cuda" if GPU else "cpu"
@@ -48,7 +53,7 @@ class Predictor(BasePredictor):
         vocoder_cfg_path = "./models/vc/vevo/config/Vocoder.json"
         vocoder_ckpt_path = "/src/checkpoints/_vevo/acoustic_modeling/Vocoder"
         self.vevo = VevoInferencePipeline(
-        content_style_tokenizer_ckpt_path=content_style_tokenizer_ckpt_path,
+            content_style_tokenizer_ckpt_path=content_style_tokenizer_ckpt_path,
             ar_cfg_path=ar_cfg_path,
             ar_ckpt_path=ar_ckpt_path,
             fmt_cfg_path=fmt_cfg_path,
@@ -56,6 +61,13 @@ class Predictor(BasePredictor):
             vocoder_cfg_path=vocoder_cfg_path,
             vocoder_ckpt_path=vocoder_ckpt_path,
             device=device,
+        )
+
+        print(f"AR model params: {get_model_params(self.vevo.ar_model)}")
+        print(f"FM model params: {get_model_params(self.vevo.fmt_model)}")
+        print(f"Vocoder model params: {get_model_params(self.vevo.vocoder_model)}")
+        print(
+            f"Total params: {get_model_params(self.vevo.ar_model) + get_model_params(self.vevo.fmt_model) + get_model_params(self.vevo.vocoder_model)}"
         )
 
     def predict(

@@ -30,13 +30,19 @@ from utils.util import load_config
 
 GPU = torch.cuda.is_available()
 
+
+def get_model_params(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    return total_params
+
+
 class Predictor(BasePredictor):
     def setup(self) -> None:
         # generic
         EncodecModel.encodec_model_24khz()
-        nltk.download('averaged_perceptron_tagger_eng')
+        nltk.download("averaged_perceptron_tagger_eng")
         device = "cuda" if GPU else "cpu"
-        
+
         # ----------------
         # valle_v1_small
         # ----------------
@@ -63,7 +69,7 @@ class Predictor(BasePredictor):
         self.valle_v1_small = VALLEInference(ns_args, cfg)
         if GPU:
             self.valle_v1_small.model = self.valle_v1_small.model.to(device)
-        
+
         # ----------------
         # valle_v1_medium
         # ----------------
@@ -86,6 +92,10 @@ class Predictor(BasePredictor):
             speechtokenizer_path="/src/checkpoints/valle_v2/tokenizer",
             device=device,
         )
+
+        print(f"VALLE v1 small params: {get_model_params(self.valle_v1_small.model)}")
+        print(f"VALLE v1 medium params: {get_model_params(self.valle_v1_medium.model)}")
+        print(f"VALLE v2 params: {get_model_params(self.valle_v2)}")
 
     def predict(
         self,
@@ -113,7 +123,9 @@ class Predictor(BasePredictor):
             self.valle_v1_small.args.audio_prompt = str(speaker_reference)
             self.valle_v1_small.args.output_dir = output_dir
             self.valle_v1_small.inference()
-            return cog.Path(self.valle_v1_small.args.output_dir + "/single/test_pred.wav")
+            return cog.Path(
+                self.valle_v1_small.args.output_dir + "/single/test_pred.wav"
+            )
         elif model == "valle_v1_medium":
             # see https://github.com/open-mmlab/Amphion/tree/main/egs/tts/VALLE
             self.valle_v1_medium.args.text = text
@@ -121,7 +133,9 @@ class Predictor(BasePredictor):
             self.valle_v1_medium.args.audio_prompt = str(speaker_reference)
             self.valle_v1_medium.args.output_dir = output_dir
             self.valle_v1_medium.inference()
-            return cog.Path(self.valle_v1_medium.args.output_dir + "/single/test_pred.wav")
+            return cog.Path(
+                self.valle_v1_medium.args.output_dir + "/single/test_pred.wav"
+            )
         elif model == "valle_v2":
             # see https://github.com/open-mmlab/Amphion/blob/main/egs/tts/VALLE_V2/demo.ipynb
             wav, _ = librosa.load(str(speaker_reference), sr=16000)
@@ -132,17 +146,23 @@ class Predictor(BasePredictor):
             text = torch.tensor(text, dtype=torch.long)
             transcript = torch.cat([text_prompt, text])
             batch = {"speech": wav.unsqueeze(0), "phone_ids": transcript.unsqueeze(0)}
-            configs = [dict(
-                top_p=0.9,
-                top_k=5,
-                temperature=0.95,
-                repeat_penalty=1.0,
-                max_length=2000,
-                num_beams=1,
-            )]
+            configs = [
+                dict(
+                    top_p=0.9,
+                    top_k=5,
+                    temperature=0.95,
+                    repeat_penalty=1.0,
+                    max_length=2000,
+                    num_beams=1,
+                )
+            ]
             output_wav = self.valle_v2(batch, configs)
             if GPU:
-                torchaudio.save(output_dir + "/test_pred.wav", output_wav.squeeze(0).cpu(), 16000)
+                torchaudio.save(
+                    output_dir + "/test_pred.wav", output_wav.squeeze(0).cpu(), 16000
+                )
             else:
-                torchaudio.save(output_dir + "/test_pred.wav", output_wav.squeeze(0), 16000)
+                torchaudio.save(
+                    output_dir + "/test_pred.wav", output_wav.squeeze(0), 16000
+                )
             return cog.Path(output_dir + "/test_pred.wav")
