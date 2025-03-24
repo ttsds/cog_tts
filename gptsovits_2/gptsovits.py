@@ -345,8 +345,6 @@ class GPTSoVITSPipeline:
             # Extract reference semantic from reference wav
             # a) load ref wav 16k
             wav16k, sr = librosa.load(ref_wav_path, sr=16000)
-            if wav16k.shape[0] > 160000 or wav16k.shape[0] < 48000:
-                raise ValueError("Reference audio must be between 3~10 seconds!")
             wav16k_torch = torch.from_numpy(wav16k).to(self.device, dtype=self.dtype)
 
             # Add 0.3s pause in the reference, so the HuBERT features are not truncated

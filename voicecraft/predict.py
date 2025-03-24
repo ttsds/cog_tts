@@ -9,6 +9,9 @@ import numpy as np
 import torch
 import torchaudio
 import argparse
+import re
+from num2words import num2words
+from whisperx import load_model, load_align_model, load_audio, align
 
 sys.path.append("/voicecraft")
 
@@ -59,6 +62,17 @@ class Predictor(BasePredictor):
         # Load text tokenizer
         self.text_tokenizer = TextTokenizer(backend="espeak")
 
+        # Load WhisperX models
+        asr_options = {
+            "hotwords": None,
+            "multilingual": False,
+            "max_new_tokens": None, 
+            "clip_timestamps": None, 
+            "hallucination_silence_threshold": None,
+        }
+        self.whisper_model = load_model("base.en", self.device, compute_type="float32", asr_options=asr_options)
+        self.align_model, self.align_metadata = load_align_model(language_code="en", device=self.device)
+
         # Set default parameters
         self.silence_tokens = [1388, 1898, 131]
         self.codec_audio_sr = 16000
@@ -75,39 +89,59 @@ class Predictor(BasePredictor):
         self.margin = 0.04
         self.cutoff_tolerance = 1
 
-    def _find_closest_word_boundary(
-        self, alignments, cut_off_sec, margin, cutoff_tolerance=1
-    ):
-        with open(alignments, "r") as file:
-            next(file)
-            cutoff_time = None
-            cutoff_index = None
-            cutoff_time_best = None
-            cutoff_index_best = None
-            lines = [l for l in file.readlines() if "words" in l]
+    def _find_word_boundary_from_whisperx(self, segments, cut_off_sec, margin, cutoff_tolerance=1):
+        cutoff_time = None
+        cutoff_index = None
+        cutoff_time_best = None
+        cutoff_index_best = None
+        
+        # Extract word information from segments
+        words_info = []
+        for segment in segments:
+            for word in segment.get("words", []):
+                words_info.append(word)
+        
+        try:
+            for i, word in enumerate(words_info):
+                end = word.get("end", 0)
+                if end >= cut_off_sec and cutoff_time is None:
+                    cutoff_time = end
+                    cutoff_index = i
+                if (
+                    end >= cut_off_sec
+                    and end < cut_off_sec + cutoff_tolerance
+                    and i+1 < len(words_info)
+                    and words_info[i+1].get("start", 0) - end >= margin
+                ):
+                    cutoff_time_best = end + margin * 2 / 3
+                    cutoff_index_best = i
+                    break
+            if cutoff_time_best is not None:
+                cutoff_time = cutoff_time_best
+                cutoff_index = cutoff_index_best
+        except Exception as e:
+            print(f"Error finding word boundary: {e}")
+            
+        if cutoff_time is None and words_info:
+            cutoff_time = words_info[-1].get("end", 0)
+            cutoff_index = len(words_info) - 1
+        elif cutoff_time is None:
+            cutoff_time = cut_off_sec
+            cutoff_index = 0
+            
+        return cutoff_time, cutoff_index
+        
+    def replace_numbers_with_words(self, text):
+        text = re.sub(r'(\d+)', r' \1 ', text)  # add spaces around numbers
+        
+        def replace_with_words(match):
+            num = match.group(0)
             try:
-                for i, line in enumerate(lines):
-                    end = float(line.strip().split(",")[1])
-                    if end >= cut_off_sec and cutoff_time == None:
-                        cutoff_time = end
-                        cutoff_index = i
-                    if (
-                        end >= cut_off_sec
-                        and end < cut_off_sec + cutoff_tolerance
-                        and float(lines[i + 1].strip().split(",")[0]) - end >= margin
-                    ):
-                        cutoff_time_best = end + margin * 2 / 3
-                        cutoff_index_best = i
-                        break
-                if cutoff_time_best != None:
-                    cutoff_time = cutoff_time_best
-                    cutoff_index = cutoff_index_best
+                return num2words(num)
             except:
-                pass
-            if cutoff_time == None:
-                cutoff_time = float(lines[-1].strip().split(",")[1])
-                cutoff_index = len(lines) - 1
-            return cutoff_time, cutoff_index
+                return num
+                
+        return re.sub(r'\b\d+\b', replace_with_words, text)
 
     def predict(
         self,
@@ -130,37 +164,50 @@ class Predictor(BasePredictor):
         output_dir = "/results/" + sha256(np.random.bytes(32)).hexdigest()
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-        # Create temp directory for MFA
+        # Create temp directory
         temp_dir = Path(tempfile.mkdtemp())
         temp_audio = temp_dir / "reference.wav"
-        temp_text = temp_dir / "reference.txt"
-
-        # Copy reference audio and text
+        temp_json = temp_dir / "whisperx_result.json"
+        
+        # Copy reference audio
         shutil.copy(speaker_reference, temp_audio)
-        with open(temp_text, "w") as f:
-            f.write(text_reference)
+        
+        # Preprocess reference text
+        text_reference = self.replace_numbers_with_words(text_reference)
 
-        # Run MFA alignment
-        align_temp = temp_dir / "mfa_alignments"
-        alignments = align_temp / "reference.csv"
-        os.system(
-            f'/bin/bash -c  "source /cog/miniconda/bin/activate && conda activate myenv && mfa align -v --clean -j 1 --output_format csv {temp_dir} \
-                english_us_arpa english_us_arpa {align_temp} --beam {self.beam_size} --retry_beam {self.retry_beam_size}"'
-        )
-
-        # Find cutoff point
-        cut_off_sec, cut_off_word_idx = self._find_closest_word_boundary(
-            alignments, self.cut_off_sec, self.margin, self.cutoff_tolerance
-        )
-
-        # Process transcript
-        orig_split = text_reference.split(" ")
-        cut_off_word_idx = min(cut_off_word_idx, len(orig_split) - 1)
-        target_transcript = " ".join(orig_split[: cut_off_word_idx + 1]) + " " + text
-
-        # Get audio duration and cutoff
+        # Get audio info
         info = torchaudio.info(temp_audio)
         audio_dur = info.num_frames / info.sample_rate
+
+        # Perform WhisperX alignment
+        audio = load_audio(temp_audio)
+        result = self.whisper_model.transcribe(str(temp_audio))
+        segments = result["segments"]
+        
+        # Align with reference text
+        segments = align(segments, self.align_model, self.align_metadata, audio, self.device, return_char_alignments=False)["segments"]
+        
+        # Save alignment results for debugging
+        import json
+        with open(temp_json, "w") as f:
+            json.dump(segments, f, indent=2)
+        
+        # Find cutoff point using WhisperX segments
+        cut_off_sec, cut_off_word_idx = self._find_word_boundary_from_whisperx(
+            segments, self.cut_off_sec, self.margin, self.cutoff_tolerance
+        )
+
+        # Extract words from segments to build transcript
+        words = []
+        for segment in segments:
+            for word in segment.get("words", []):
+                words.append(word.get("word", ""))
+        
+        # Process transcript
+        cut_off_word_idx = min(cut_off_word_idx, len(words) - 1)
+        target_transcript = " ".join(words[:cut_off_word_idx + 1]) + " " + text
+
+        # Ensure cutoff is within audio bounds
         cut_off_sec = min(cut_off_sec, audio_dur)
         prompt_end_frame = int(cut_off_sec * info.sample_rate)
 

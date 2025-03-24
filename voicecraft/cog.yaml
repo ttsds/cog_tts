@@ -33,20 +33,12 @@ build:
     - torchmetrics==0.11.1
     - numpy<2
     - huggingface_hub
+    - whisperx
+    - num2words==0.5.13
+    - nltk>=3.8.1
 
   run:
-    # Download and install Miniconda (make sure the Python version matches)
-    - curl -O https://repo.anaconda.com/miniconda/Miniconda3-py310_23.3.1-0-Linux-x86_64.sh
-    - bash Miniconda3-py310_23.3.1-0-Linux-x86_64.sh -b -p /cog/miniconda
-    # Initialize Conda for bash
-    - /cog/miniconda/bin/conda init bash
-    # Activate base environment
-    - /bin/bash -c "source /cog/miniconda/bin/activate && conda create -n myenv python=3.10 -y"
-    - /bin/bash -c "source /cog/miniconda/bin/activate && conda activate myenv && conda install -c conda-forge montreal-forced-aligner -y"
-    - export PATH="/cog/miniconda/envs/myenv/bin:$PATH"
-    # montreal-forced-aligner
-    - /bin/bash -c "source /cog/miniconda/bin/activate && conda activate myenv && mfa model download dictionary english_us_arpa"
-    - /bin/bash -c "source /cog/miniconda/bin/activate && conda activate myenv && mfa model download acoustic english_us_arpa"
+    - pip install --upgrade faster-whisper
     # voicecraft
     - git clone https://github.com/jasonppy/VoiceCraft.git voicecraft
     - cd voicecraft && git checkout 4873249
