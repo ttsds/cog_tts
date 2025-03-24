@@ -97,7 +97,7 @@ def get_phones_and_bert(text, language_mode, version,
     lang = language_mode
     if lang == "en":
         # Just interpret as English
-        LangSegment.setfilters(["en"])
+        LangSegment.setLangfilters(["en"])
         formattext = " ".join(segment["text"] for segment in LangSegment.getTexts(text))
     else:
         # If it's declared as "zh", "ja", "ko", or "yue", just use the text directly

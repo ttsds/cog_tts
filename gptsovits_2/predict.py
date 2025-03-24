@@ -46,7 +46,7 @@ class Predictor(BasePredictor):
     def predict(
         self,
         text: str = cog.Input(),
-        language: str = cog.Input(choices=LANGS),
+        language: str = cog.Input(choices=[ "en", "zh", "ja", "ko", "yue"]),
         speaker_reference: cog.Path = cog.Input(),
         text_reference: str = cog.Input(),
     ) -> cog.Path:

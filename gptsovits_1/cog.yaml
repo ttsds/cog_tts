@@ -30,6 +30,7 @@ build:
     - "cd gptsovits && git checkout eee607b"
     - "cd gptsovits && sed -i 's/if (wav16k.shape[0] > 160000 or wav16k.shape[0] < 48000):/if True:/g' GPT_SoVITS/inference_webui.py"
     - "cd gptsovits && pip install -r requirements.txt"
+    - "pip install git+https://github.com/ishine/LangSegment.git@1e59e5456cd8200e78d0bc7e630f03b171e5bddd"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
