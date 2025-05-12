@@ -19,3 +19,8 @@ if [ ! -d "checkpoints/uvr5_weights" ]; then
     git clone https://huggingface.co/Delik/uvr5_weights checkpoints/uvr5_weights
     rm -rf checkpoints/uvr5_weights/.git
 fi
+if [ ! -d "checkpoints/g2pwmodel" ]; then
+    wget https://huggingface.co/XXXXRT/GPT-SoVITS-Pretrained/resolve/main/G2PWModel.zip -O checkpoints/g2G2PWModelpwmodel.zip
+    unzip checkpoints/G2PWModel.zip
+    rm checkpoints/G2PWModel.zip
+fi

@@ -56,7 +56,6 @@ build:
   # Commands run after the environment is set up
   run:
     # Clone Amphion
-    - "echo 'Cloning Amphion1...'"
     - "git clone https://github.com/open-mmlab/Amphion.git"
     - "cd Amphion && git checkout 04dfe6e"
     - "git lfs install"
